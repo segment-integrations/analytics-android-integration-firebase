@@ -40,6 +40,10 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
         logger.debug("INTERNET is required for Firebase Analytics.");
         return null;
       }
+      if (!hasPermission(analytics.getApplication(), Manifest.permission.WAKE_LOCK)) {
+        logger.debug("WAKE_LOCK is required for Firebase Analytics.");
+        return null;
+      }
 
       Context context = analytics.getApplication();
 
