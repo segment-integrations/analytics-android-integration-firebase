@@ -76,17 +76,19 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   }
 
   @Override
-  public void onActivityStarted(Activity activity) {
-    super.onActivityStarted(activity);
+  public void onActivityResumed(Activity activity) {
+    super.onActivityResumed(activity);
 
     PackageManager packageManager = activity.getPackageManager();
     try {
       ActivityInfo info =
               packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
       CharSequence activityLabel = info.loadLabel(packageManager);
-
-      mFirebaseAnalytics.setCurrentScreen(activity, activityLabel.toString(), null /* class override */);
-      logger.verbose("mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);", activity, activityLabel.toString());
+      /** setCurrentScreen should only be called in the onResume() activity */
+      mFirebaseAnalytics.setCurrentScreen(activity,
+              activityLabel.toString(), null /* class override */);
+      logger.verbose("mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
+              activity, activityLabel.toString());
 
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
@@ -115,7 +117,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   @Override
   public void screen(ScreenPayload screen) {
     super.screen(screen);
-    logger.verbose("Firebase Analytics does not support manual screen tracking. All screen views"
+    logger.verbose("Firebase Analytics does not support manual screen tracking. All screen views "
             + "are collected automatically by their SDK");
   }
 
@@ -168,7 +170,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private Bundle mapProperties(Properties properties) {
 
     if (properties.value() != 0 && isNullOrEmpty(properties.currency())) {
-      logger.verbose("You must set `currency` in your event's property object to accurately pass 'value' to Firebase.");
+      logger.verbose("You must set `currency` in your event's property object to accurately " +
+              "pass 'value' to Firebase.");
     }
 
     Bundle bundle = new Bundle();
