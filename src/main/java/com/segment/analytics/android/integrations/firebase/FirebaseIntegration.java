@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.analytics.FirebaseAnalytics.Event;
@@ -22,9 +23,14 @@ import com.segment.analytics.integrations.TrackPayload;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Date;
+import java.util.regex.Pattern;
 
+import static android.R.attr.value;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
+import static com.segment.analytics.internal.Utils.toISO8601Date;
 
 /**
  * Google Analytics for Firebase is a free app measurement solution that provides insight on app
@@ -66,6 +72,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
         }
       };
 
+  static final Pattern ISO_DATE =
+          Pattern.compile("(^([0-9]{4})-(1[0-2]|0[1-9])-(0[1-9]|1[1-9]|2[0-9]|3[0-1]).*)", CASE_INSENSITIVE);
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics mFirebaseAnalytics;
@@ -82,13 +90,14 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PackageManager packageManager = activity.getPackageManager();
     try {
       ActivityInfo info =
-              packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
+          packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
       CharSequence activityLabel = info.loadLabel(packageManager);
       /** setCurrentScreen should only be called in the onResume() activity */
-      mFirebaseAnalytics.setCurrentScreen(activity,
-              activityLabel.toString(), null /* class override */);
-      logger.verbose("mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
-              activity, activityLabel.toString());
+      mFirebaseAnalytics.setCurrentScreen(
+          activity, activityLabel.toString(), null /* class override */);
+      logger.verbose(
+          "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
+          activity, activityLabel.toString());
 
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
@@ -106,10 +115,31 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
       for (Map.Entry<String, Object> entry : traits.entrySet()) {
         String trait = entry.getKey();
+
         trait = trait.trim().toLowerCase().replaceAll(" ", "_");
-        String value = String.valueOf(entry.getValue());
-        mFirebaseAnalytics.setUserProperty(trait, value);
-        logger.verbose("mFirebaseAnalytics.setUserProperty(%s, %s);", trait, value);
+
+        if (trait.length() > 40) {
+          trait = trimKey(trait);
+        }
+
+        String formattedValue;
+
+        if (entry.getValue() instanceof Date) {
+
+          Date value = (Date) entry.getValue();
+          formattedValue = formatDate(value);
+
+        } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
+
+          formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
+
+        } else {
+
+          formattedValue = String.valueOf(entry.getValue());
+        }
+
+        mFirebaseAnalytics.setUserProperty(trait, formattedValue);
+        logger.verbose("mFirebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
       }
     }
   }
@@ -117,7 +147,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   @Override
   public void screen(ScreenPayload screen) {
     super.screen(screen);
-    logger.verbose("Firebase Analytics does not support manual screen tracking. All screen views "
+    logger.verbose(
+        "Firebase Analytics does not support manual screen tracking. All screen views "
             + "are collected automatically by their SDK");
   }
 
@@ -125,16 +156,15 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   public void track(TrackPayload track) {
     super.track(track);
 
-    // format event name
     String event = track.event();
     String eventName = mapEvent(event);
 
     // format properties
     Properties properties = track.properties();
-    Bundle mappedProperties = mapProperties(properties);
+    Bundle formattedProperties = formatProperties(properties);
 
-    mFirebaseAnalytics.logEvent(eventName, mappedProperties);
-    logger.verbose("mFirebaseAnalytics.logEvent(%s, %s);", eventName, mappedProperties);
+    mFirebaseAnalytics.logEvent(eventName, formattedProperties);
+    logger.verbose("mFirebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
   }
 
   private String mapEvent(String event) {
@@ -164,20 +194,26 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       eventName = eventName.trim().toLowerCase().replaceAll(" ", "_");
     }
 
+    if (eventName.length() > 40) {
+      eventName = trimKey(eventName);
+    }
+
     return eventName;
   }
 
-  private Bundle mapProperties(Properties properties) {
+  private Bundle formatProperties(Properties properties) {
 
     if (properties.value() != 0 && isNullOrEmpty(properties.currency())) {
-      logger.verbose("You must set `currency` in your event's property object to accurately " +
-              "pass 'value' to Firebase.");
+      logger.verbose(
+          "You must set `currency` in your event's property object to accurately "
+              + "pass 'value' to Firebase.");
     }
 
     Bundle bundle = new Bundle();
 
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String property = entry.getKey();
+      property = property.trim().toLowerCase().replaceAll(" ", "_");
 
       if (entry.getValue() instanceof Integer) {
         int value = (int) entry.getValue();
@@ -188,22 +224,58 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       if (entry.getValue() instanceof Double) {
         double value = (double) entry.getValue();
         bundle.putDouble(property, value);
-        logger.verbose("bundle.putInt(%s, %s);", property, value);
+        logger.verbose("bundle.putDouble(%s, %s);", property, value);
       }
 
       if (entry.getValue() instanceof Long) {
         long value = (long) entry.getValue();
         bundle.putLong(property, value);
-        logger.verbose("bundle.putInt(%s, %s);", property, value);
+        logger.verbose("bundle.putLong(%s, %s);", property, value);
       }
 
       if (entry.getValue() instanceof String) {
         String value = String.valueOf(entry.getValue());
+
+        if (ISO_DATE.matcher(value).matches()) {
+          value = value.substring(0, 10);
+        }
+
         bundle.putString(property, value);
-        logger.verbose("bundle.putInt(%s, %s);", property, value);
+        logger.verbose("bundle.putString(%s, %s);", property, value);
+      }
+
+      if (entry.getValue() instanceof Date) {
+
+        Date value = (Date) entry.getValue();
+        String formattedDate = formatDate(value);
+
+        bundle.putString(property, formattedDate);
+        logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
       }
     }
 
     return bundle;
+  }
+
+  private String trimKey(String string) {
+    return string.substring(0, Math.min(string.length(), 40));
+  }
+
+  private String startsWithLetter(String string) {
+    if (string.substring(0, 1).matches("[A-Z][a-z]")) {
+      return string;
+    } else {
+      /* Firebase will reject param otherwise, but app won't crash */
+      logger.verbose("%s does not begin with an alphabetic character "
+              + "trait and parameter names must begin with a letter or will not be processed "
+              + "by Firebase Analytics.", string);
+      return string;
+    }
+  }
+
+  private String formatDate(Date date) {
+    String stringifiedValue = toISO8601Date(date);
+    String truncatedValue = stringifiedValue.substring(0, 10);
+    return truncatedValue;
   }
 }
