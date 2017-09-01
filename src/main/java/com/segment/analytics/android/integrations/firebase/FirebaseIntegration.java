@@ -9,9 +9,11 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Property;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.analytics.FirebaseAnalytics.Event;
+import com.google.firebase.analytics.FirebaseAnalytics.Param;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.ValueMap;
@@ -203,7 +205,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private Bundle formatProperties(Properties properties) {
 
-    if (properties.value() != 0 && isNullOrEmpty(properties.currency())) {
+    if (properties.revenue() != 0 && isNullOrEmpty(properties.currency())) {
       logger.verbose(
           "You must set `currency` in your event's property object to accurately "
               + "pass 'value' to Firebase.");
@@ -213,7 +215,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String property = entry.getKey();
-      property = property.trim().toLowerCase().replaceAll(" ", "_");
+      property  = mapProperty(property);
 
       if (entry.getValue() instanceof Integer) {
         int value = (int) entry.getValue();
@@ -255,6 +257,38 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     }
 
     return bundle;
+  }
+
+  private String mapProperty(String property) {
+
+    final Map<String, String> propertyMapper = new HashMap<>();
+    propertyMapper.put("category", Param.ITEM_CATEGORY);
+    propertyMapper.put("product_id", Param.ITEM_ID);
+    propertyMapper.put("name", Param.ITEM_NAME);
+    propertyMapper.put("price", Param.PRICE);
+    propertyMapper.put("quantity", Param.QUANTITY);
+    propertyMapper.put("query", Param.SEARCH_TERM);
+    propertyMapper.put("shipping", Param.SHIPPING);
+    propertyMapper.put("tax", Param.TAX);
+    propertyMapper.put("total", Param.VALUE);
+    propertyMapper.put("revenue", Param.VALUE);
+    propertyMapper.put("order_id", Param.TRANSACTION_ID);
+    propertyMapper.put("currency", Param.CURRENCY);
+
+    if (propertyMapper.containsKey(property)) {
+      property = propertyMapper.get(property);
+    }
+
+    if (property.contains(" ")) {
+      property = property.trim().toLowerCase().replaceAll(" ", "_");
+    }
+
+    if (property.length() > 40) {
+      property = trimKey(property);
+    }
+
+    return property;
+
   }
 
   private String trimKey(String string) {
