@@ -1,10 +1,10 @@
 package com.segment.analytics.android.integrations.firebase;
 
-import com.google.firebase.analytics.FirebaseAnalytics;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -74,7 +74,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics mFirebaseAnalytics;
-  Activity thisActivity;
 
   public FirebaseIntegration(Context context, Logger logger) {
     this.logger = logger;
@@ -85,7 +84,21 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
 
-    thisActivity = activity;
+    PackageManager packageManager = activity.getPackageManager();
+    try {
+      ActivityInfo info =
+              packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
+      CharSequence activityLabel = info.loadLabel(packageManager);
+      /** setCurrentScreen should only be called in the onResume() activity */
+      mFirebaseAnalytics.setCurrentScreen(
+              activity, activityLabel.toString(), null /* class override */);
+      logger.verbose(
+              "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
+              activity, activityLabel.toString());
+
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new AssertionError("Activity Not Found: " + e.toString());
+    }
   }
 
   @Override
@@ -132,16 +145,9 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   public void screen(ScreenPayload screen) {
     super.screen(screen);
 
-    if (settings.mapToScreen) {
-      mFirebaseAnalytics.setCurrentScreen(
-              thisActivity, screen.name(), null /* class override */);
-      logger.verbose(
-              "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
-              thisActivity, screen.name());
-    } else  {
-      logger.verbose(
-              "Enable \"mapToScreen\" in your Segment settings to manually override screen labels.);");
-    }
+    logger.verbose(
+            "The Firebase SDK gathers screen calls automatically. Segment does map manual screen" +
+                    "methods to Firebase.");
 
   }
 
