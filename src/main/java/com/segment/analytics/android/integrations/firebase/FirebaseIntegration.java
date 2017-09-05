@@ -5,11 +5,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.util.Property;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.analytics.FirebaseAnalytics.Event;
@@ -28,7 +24,6 @@ import java.util.Map;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-import static android.R.attr.value;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
@@ -79,6 +74,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics mFirebaseAnalytics;
+  Activity thisActivity;
 
   public FirebaseIntegration(Context context, Logger logger) {
     this.logger = logger;
@@ -89,21 +85,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
 
-    PackageManager packageManager = activity.getPackageManager();
-    try {
-      ActivityInfo info =
-          packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
-      CharSequence activityLabel = info.loadLabel(packageManager);
-      /** setCurrentScreen should only be called in the onResume() activity */
-      mFirebaseAnalytics.setCurrentScreen(
-          activity, activityLabel.toString(), null /* class override */);
-      logger.verbose(
-          "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
-          activity, activityLabel.toString());
-
-    } catch (PackageManager.NameNotFoundException e) {
-      throw new AssertionError("Activity Not Found: " + e.toString());
-    }
+    thisActivity = activity;
   }
 
   @Override
@@ -118,7 +100,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       for (Map.Entry<String, Object> entry : traits.entrySet()) {
         String trait = entry.getKey();
 
-        trait = trait.trim().toLowerCase().replaceAll(" ", "_");
+        trait = trait.trim().replaceAll(" ", "_");
 
         if (trait.length() > 40) {
           trait = trimKey(trait);
@@ -149,9 +131,18 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   @Override
   public void screen(ScreenPayload screen) {
     super.screen(screen);
-    logger.verbose(
-        "Firebase Analytics does not support manual screen tracking. All screen views "
-            + "are collected automatically by their SDK");
+
+    if (settings.mapToScreen) {
+      mFirebaseAnalytics.setCurrentScreen(
+              thisActivity, screen.name(), null /* class override */);
+      logger.verbose(
+              "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
+              thisActivity, screen.name());
+    } else  {
+      logger.verbose(
+              "Enable \"mapToScreen\" in your Segment settings to manually override screen labels.);");
+    }
+
   }
 
   @Override
@@ -161,7 +152,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     String event = track.event();
     String eventName = mapEvent(event);
 
-    // format properties
     Properties properties = track.properties();
     Bundle formattedProperties = formatProperties(properties);
 
@@ -205,7 +195,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private Bundle formatProperties(Properties properties) {
 
-    if (properties.revenue() != 0 && isNullOrEmpty(properties.currency())) {
+    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
       logger.verbose(
           "You must set `currency` in your event's property object to accurately "
               + "pass 'value' to Firebase.");
@@ -280,7 +270,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     }
 
     if (property.contains(" ")) {
-      property = property.trim().toLowerCase().replaceAll(" ", "_");
+      property = property.trim().replaceAll(" ", "_");
     }
 
     if (property.length() > 40) {
@@ -293,18 +283,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private String trimKey(String string) {
     return string.substring(0, Math.min(string.length(), 40));
-  }
-
-  private String startsWithLetter(String string) {
-    if (string.substring(0, 1).matches("[A-Z][a-z]")) {
-      return string;
-    } else {
-      /* Firebase will reject param otherwise, but app won't crash */
-      logger.verbose("%s does not begin with an alphabetic character "
-              + "trait and parameter names must begin with a letter or will not be processed "
-              + "by Firebase Analytics.", string);
-      return string;
-    }
   }
 
   private String formatDate(Date date) {
