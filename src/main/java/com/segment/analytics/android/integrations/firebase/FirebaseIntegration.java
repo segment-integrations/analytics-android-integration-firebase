@@ -66,9 +66,9 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   final Logger logger;
   final FirebaseAnalytics firebaseAnalytics;
   private static final Map<String, String> eventMapper = createEventMap();
-  private static Map<String, String> createEventMap()
-  {
-    Map<String,String> eventMapper = new HashMap<>();
+
+  private static Map<String, String> createEventMap() {
+    Map<String, String> eventMapper = new HashMap<>();
     eventMapper.put("Product Added", Event.ADD_TO_CART);
     eventMapper.put("Checkout Started", Event.BEGIN_CHECKOUT);
     eventMapper.put("Order Completed", Event.ECOMMERCE_PURCHASE);
@@ -84,10 +84,11 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     eventMapper.put("Promotion Viewed", Event.PRESENT_OFFER);
     return eventMapper;
   }
+
   private static final Map<String, String> propertyMapper = createPropertyMap();
-  private static Map<String, String> createPropertyMap()
-  {
-    Map<String,String> propertyMapper = new HashMap<>();
+
+  private static Map<String, String> createPropertyMap() {
+    Map<String, String> propertyMapper = new HashMap<>();
     propertyMapper.put("category", Param.ITEM_CATEGORY);
     propertyMapper.put("product_id", Param.ITEM_ID);
     propertyMapper.put("name", Param.ITEM_NAME);
@@ -115,14 +116,12 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PackageManager packageManager = activity.getPackageManager();
     try {
       ActivityInfo info =
-              packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
+          packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
       String activityLabel = info.loadLabel(packageManager).toString();
-      firebaseAnalytics.setCurrentScreen(
-              activity, activityLabel, null);
+      firebaseAnalytics.setCurrentScreen(activity, activityLabel, null);
       logger.verbose(
-              "firebaseAnalytics.setCurrentScreen(activity, %s, null /* class override */);",
-              activityLabel);
-
+          "firebaseAnalytics.setCurrentScreen(activity, %s, null);",
+          activityLabel);
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
     }
@@ -180,12 +179,13 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private Bundle formatProperties(Properties properties) {
     Bundle bundle = new Bundle();
-    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
+    if ((properties.revenue() != 0 || properties.total() != 0)
+        && isNullOrEmpty(properties.currency())) {
       bundle.putString(Param.CURRENCY, "USD");
     }
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String property = entry.getKey();
-      property  = mapProperty(property);
+      property = mapProperty(property);
       if (entry.getValue() instanceof Integer) {
         int value = (int) entry.getValue();
         bundle.putInt(property, value);
