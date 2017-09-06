@@ -1,8 +1,8 @@
 analytics-android-integration-firebase
 =======================================
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/quantcast/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/quantcast)
-[![Javadocs](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/quantcast.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/quantcast)
+[![Maven Central]()
+[![Javadocs]()
 
 Firebase Analytics integration for [analytics-android](https://github.com/segmentio/analytics-android).
 
