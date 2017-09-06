@@ -16,7 +16,6 @@ import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
-import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
 
 import java.util.HashMap;
@@ -47,10 +46,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
           if (!hasPermission(
               analytics.getApplication(), Manifest.permission.ACCESS_NETWORK_STATE)) {
             logger.debug("ACCESS_NETWORK_STATE is required for Firebase Analytics.");
-            return null;
-          }
-          if (!hasPermission(analytics.getApplication(), Manifest.permission.INTERNET)) {
-            logger.debug("INTERNET is required for Firebase Analytics.");
             return null;
           }
           if (!hasPermission(analytics.getApplication(), Manifest.permission.WAKE_LOCK)) {
@@ -125,13 +120,12 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     try {
       ActivityInfo info =
               packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
-      CharSequence activityLabel = info.loadLabel(packageManager);
-      /** setCurrentScreen should only be called in the onResume() activity */
+      String activityLabel = info.loadLabel(packageManager).toString();
       firebaseAnalytics.setCurrentScreen(
-              activity, activityLabel.toString(), null /* class override */);
+              activity, activityLabel, null);
       logger.verbose(
-              "firebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
-              activity, activityLabel.toString());
+              "firebaseAnalytics.setCurrentScreen(activity, %s, null /* class override */);",
+              activityLabel);
 
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
@@ -144,36 +138,26 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
     if (!isNullOrEmpty(identify.userId())) {
       firebaseAnalytics.setUserId(identify.userId());
-      Map<String, Object> traits = identify.traits();
-      for (Map.Entry<String, Object> entry : traits.entrySet()) {
-        String trait = entry.getKey();
-        trait = trait.trim().replaceAll(" ", "_");
-        if (trait.length() > 40) {
-          trait = trimKey(trait);
-        }
-        String formattedValue;
-        if (entry.getValue() instanceof Date) {
-          Date value = (Date) entry.getValue();
-          formattedValue = formatDate(value);
-        } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
-          formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
-        } else {
-          formattedValue = String.valueOf(entry.getValue());
-        }
-
-        firebaseAnalytics.setUserProperty(trait, formattedValue);
-        logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
-      }
     }
-  }
-
-  @Override
-  public void screen(ScreenPayload screen) {
-    super.screen(screen);
-
-    logger.verbose(
-            "The Firebase SDK gathers screen calls automatically. Segment does map manual screen " +
-                    "methods to Firebase.");
+    Map<String, Object> traits = identify.traits();
+    for (Map.Entry<String, Object> entry : traits.entrySet()) {
+      String trait = entry.getKey();
+      trait = trait.trim().replaceAll(" ", "_");
+      if (trait.length() > 40) {
+        trait = trimKey(trait);
+      }
+      String formattedValue;
+      if (entry.getValue() instanceof Date) {
+        Date value = (Date) entry.getValue();
+        formattedValue = formatDate(value);
+      } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
+        formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
+      } else {
+        formattedValue = String.valueOf(entry.getValue());
+      }
+      firebaseAnalytics.setUserProperty(trait, formattedValue);
+      logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
+    }
   }
 
   @Override
@@ -183,16 +167,9 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     String event = track.event();
     String eventName = mapEvent(event);
     Properties properties = track.properties();
-
-    try {
-      Bundle formattedProperties = formatProperties(properties);
-      firebaseAnalytics.logEvent(eventName, formattedProperties);
-      logger.verbose("firebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
-    } catch (Exception e) {
-      logger.verbose(
-              "You must set `currency` in your event's property object to accurately "
-                      + "pass 'value' to Firebase. This event was not sent to Firebase.");
-    }
+    Bundle formattedProperties = formatProperties(properties);
+    firebaseAnalytics.logEvent(eventName, formattedProperties);
+    logger.verbose("firebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
   }
 
   private String mapEvent(String event) {
@@ -200,20 +177,18 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     if (eventMapper.containsKey(eventName)) {
       eventName = eventMapper.get(eventName);
     }
-    if (eventName.contains(" ")) {
-      eventName = eventName.trim().toLowerCase().replaceAll(" ", "_");
-    }
+    eventName = eventName.trim().replaceAll(" ", "_");
     if (eventName.length() > 40) {
       eventName = trimKey(eventName);
     }
     return eventName;
   }
 
-  private Bundle formatProperties(Properties properties) throws Exception {
-    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
-      throw new Exception();
-    }
+  private Bundle formatProperties(Properties properties) {
     Bundle bundle = new Bundle();
+    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
+      bundle.putString(Param.CURRENCY, "USD");
+    }
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       String property = entry.getKey();
       property  = mapProperty(property);
@@ -259,9 +234,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     if (propertyMapper.containsKey(property)) {
       property = propertyMapper.get(property);
     }
-    if (property.contains(" ")) {
-      property = property.trim().replaceAll(" ", "_");
-    }
+    property = property.trim().replaceAll(" ", "_");
     if (property.length() > 40) {
       property = trimKey(property);
     }
