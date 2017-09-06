@@ -73,103 +73,11 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
           Pattern.compile("(^([0-9]{4})-(1[0-2]|0[1-9])-(0[1-9]|1[1-9]|2[0-9]|3[0-1]).*)", CASE_INSENSITIVE);
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
-  final FirebaseAnalytics mFirebaseAnalytics;
-
-  public FirebaseIntegration(Context context, Logger logger) {
-    this.logger = logger;
-    mFirebaseAnalytics = FirebaseAnalytics.getInstance(context);
-  }
-
-  @Override
-  public void onActivityResumed(Activity activity) {
-    super.onActivityResumed(activity);
-
-    PackageManager packageManager = activity.getPackageManager();
-    try {
-      ActivityInfo info =
-              packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
-      CharSequence activityLabel = info.loadLabel(packageManager);
-      /** setCurrentScreen should only be called in the onResume() activity */
-      mFirebaseAnalytics.setCurrentScreen(
-              activity, activityLabel.toString(), null /* class override */);
-      logger.verbose(
-              "mFirebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
-              activity, activityLabel.toString());
-
-    } catch (PackageManager.NameNotFoundException e) {
-      throw new AssertionError("Activity Not Found: " + e.toString());
-    }
-  }
-
-  @Override
-  public void identify(IdentifyPayload identify) {
-    super.identify(identify);
-
-    if (!isNullOrEmpty(identify.userId())) {
-      mFirebaseAnalytics.setUserId(identify.userId());
-
-      Map<String, Object> traits = identify.traits();
-
-      for (Map.Entry<String, Object> entry : traits.entrySet()) {
-        String trait = entry.getKey();
-
-        trait = trait.trim().replaceAll(" ", "_");
-
-        if (trait.length() > 40) {
-          trait = trimKey(trait);
-        }
-
-        String formattedValue;
-
-        if (entry.getValue() instanceof Date) {
-
-          Date value = (Date) entry.getValue();
-          formattedValue = formatDate(value);
-
-        } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
-
-          formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
-
-        } else {
-
-          formattedValue = String.valueOf(entry.getValue());
-        }
-
-        mFirebaseAnalytics.setUserProperty(trait, formattedValue);
-        logger.verbose("mFirebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
-      }
-    }
-  }
-
-  @Override
-  public void screen(ScreenPayload screen) {
-    super.screen(screen);
-
-    logger.verbose(
-            "The Firebase SDK gathers screen calls automatically. Segment does map manual screen" +
-                    "methods to Firebase.");
-
-  }
-
-  @Override
-  public void track(TrackPayload track) {
-    super.track(track);
-
-    String event = track.event();
-    String eventName = mapEvent(event);
-
-    Properties properties = track.properties();
-    Bundle formattedProperties = formatProperties(properties);
-
-    mFirebaseAnalytics.logEvent(eventName, formattedProperties);
-    logger.verbose("mFirebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
-  }
-
-  private String mapEvent(String event) {
-
-    String eventName = event;
-
-    final Map<String, String> eventMapper = new HashMap<>();
+  final FirebaseAnalytics firebaseAnalytics;
+  private static final Map<String, String> eventMapper = createEventMap();
+  private static Map<String, String> createEventMap()
+  {
+    Map<String,String> eventMapper = new HashMap<>();
     eventMapper.put("Product Added", Event.ADD_TO_CART);
     eventMapper.put("Checkout Started", Event.BEGIN_CHECKOUT);
     eventMapper.put("Order Completed", Event.ECOMMERCE_PURCHASE);
@@ -183,81 +91,12 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     eventMapper.put("Product Clicked", Event.SELECT_CONTENT);
     eventMapper.put("Product Searched", Event.SEARCH);
     eventMapper.put("Promotion Viewed", Event.PRESENT_OFFER);
-
-    if (eventMapper.containsKey(eventName)) {
-      eventName = eventMapper.get(eventName);
-    }
-
-    if (eventName.contains(" ")) {
-      eventName = eventName.trim().toLowerCase().replaceAll(" ", "_");
-    }
-
-    if (eventName.length() > 40) {
-      eventName = trimKey(eventName);
-    }
-
-    return eventName;
+    return eventMapper;
   }
-
-  private Bundle formatProperties(Properties properties) {
-
-    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
-      logger.verbose(
-          "You must set `currency` in your event's property object to accurately "
-              + "pass 'value' to Firebase.");
-    }
-
-    Bundle bundle = new Bundle();
-
-    for (Map.Entry<String, Object> entry : properties.entrySet()) {
-      String property = entry.getKey();
-      property  = mapProperty(property);
-
-      if (entry.getValue() instanceof Integer) {
-        int value = (int) entry.getValue();
-        bundle.putInt(property, value);
-        logger.verbose("bundle.putInt(%s, %s);", property, value);
-      }
-
-      if (entry.getValue() instanceof Double) {
-        double value = (double) entry.getValue();
-        bundle.putDouble(property, value);
-        logger.verbose("bundle.putDouble(%s, %s);", property, value);
-      }
-
-      if (entry.getValue() instanceof Long) {
-        long value = (long) entry.getValue();
-        bundle.putLong(property, value);
-        logger.verbose("bundle.putLong(%s, %s);", property, value);
-      }
-
-      if (entry.getValue() instanceof String) {
-        String value = String.valueOf(entry.getValue());
-
-        if (ISO_DATE.matcher(value).matches()) {
-          value = value.substring(0, 10);
-        }
-
-        bundle.putString(property, value);
-        logger.verbose("bundle.putString(%s, %s);", property, value);
-      }
-
-      if (entry.getValue() instanceof Date) {
-
-        Date value = (Date) entry.getValue();
-        String formattedDate = formatDate(value);
-
-        bundle.putString(property, formattedDate);
-        logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
-      }
-    }
-
-    return bundle;
-  }
-
-  private String mapProperty(String property) {
-
-    final Map<String, String> propertyMapper = new HashMap<>();
+  private static final Map<String, String> propertyMapper = createPropertyMap();
+  private static Map<String, String> createPropertyMap()
+  {
+    Map<String,String> propertyMapper = new HashMap<>();
     propertyMapper.put("category", Param.ITEM_CATEGORY);
     propertyMapper.put("product_id", Param.ITEM_ID);
     propertyMapper.put("name", Param.ITEM_NAME);
@@ -270,21 +109,163 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     propertyMapper.put("revenue", Param.VALUE);
     propertyMapper.put("order_id", Param.TRANSACTION_ID);
     propertyMapper.put("currency", Param.CURRENCY);
+    return propertyMapper;
+  }
 
+  public FirebaseIntegration(Context context, Logger logger) {
+    this.logger = logger;
+    firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+  }
+
+  @Override
+  public void onActivityResumed(Activity activity) {
+    super.onActivityResumed(activity);
+
+    PackageManager packageManager = activity.getPackageManager();
+    try {
+      ActivityInfo info =
+              packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
+      CharSequence activityLabel = info.loadLabel(packageManager);
+      /** setCurrentScreen should only be called in the onResume() activity */
+      firebaseAnalytics.setCurrentScreen(
+              activity, activityLabel.toString(), null /* class override */);
+      logger.verbose(
+              "firebaseAnalytics.setCurrentScreen(%s, %s, null /* class override */);",
+              activity, activityLabel.toString());
+
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new AssertionError("Activity Not Found: " + e.toString());
+    }
+  }
+
+  @Override
+  public void identify(IdentifyPayload identify) {
+    super.identify(identify);
+
+    if (!isNullOrEmpty(identify.userId())) {
+      firebaseAnalytics.setUserId(identify.userId());
+      Map<String, Object> traits = identify.traits();
+      for (Map.Entry<String, Object> entry : traits.entrySet()) {
+        String trait = entry.getKey();
+        trait = trait.trim().replaceAll(" ", "_");
+        if (trait.length() > 40) {
+          trait = trimKey(trait);
+        }
+        String formattedValue;
+        if (entry.getValue() instanceof Date) {
+          Date value = (Date) entry.getValue();
+          formattedValue = formatDate(value);
+        } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
+          formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
+        } else {
+          formattedValue = String.valueOf(entry.getValue());
+        }
+
+        firebaseAnalytics.setUserProperty(trait, formattedValue);
+        logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
+      }
+    }
+  }
+
+  @Override
+  public void screen(ScreenPayload screen) {
+    super.screen(screen);
+
+    logger.verbose(
+            "The Firebase SDK gathers screen calls automatically. Segment does map manual screen " +
+                    "methods to Firebase.");
+  }
+
+  @Override
+  public void track(TrackPayload track) {
+    super.track(track);
+
+    String event = track.event();
+    String eventName = mapEvent(event);
+    Properties properties = track.properties();
+
+    try {
+      Bundle formattedProperties = formatProperties(properties);
+      firebaseAnalytics.logEvent(eventName, formattedProperties);
+      logger.verbose("firebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
+    } catch (Exception e) {
+      logger.verbose(
+              "You must set `currency` in your event's property object to accurately "
+                      + "pass 'value' to Firebase. This event was not sent to Firebase.");
+    }
+  }
+
+  private String mapEvent(String event) {
+    String eventName = event;
+    if (eventMapper.containsKey(eventName)) {
+      eventName = eventMapper.get(eventName);
+    }
+    if (eventName.contains(" ")) {
+      eventName = eventName.trim().toLowerCase().replaceAll(" ", "_");
+    }
+    if (eventName.length() > 40) {
+      eventName = trimKey(eventName);
+    }
+    return eventName;
+  }
+
+  private Bundle formatProperties(Properties properties) throws Exception {
+    if ((properties.revenue() != 0 || properties.total() != 0) && isNullOrEmpty(properties.currency())) {
+      throw new Exception();
+    }
+    Bundle bundle = new Bundle();
+    for (Map.Entry<String, Object> entry : properties.entrySet()) {
+      String property = entry.getKey();
+      property  = mapProperty(property);
+      if (entry.getValue() instanceof Integer) {
+        int value = (int) entry.getValue();
+        bundle.putInt(property, value);
+        logger.verbose("bundle.putInt(%s, %s);", property, value);
+        continue;
+      }
+      if (entry.getValue() instanceof Double) {
+        double value = (double) entry.getValue();
+        bundle.putDouble(property, value);
+        logger.verbose("bundle.putDouble(%s, %s);", property, value);
+        continue;
+      }
+      if (entry.getValue() instanceof Long) {
+        long value = (long) entry.getValue();
+        bundle.putLong(property, value);
+        logger.verbose("bundle.putLong(%s, %s);", property, value);
+        continue;
+      }
+      if (entry.getValue() instanceof String) {
+        String value = String.valueOf(entry.getValue());
+        if (ISO_DATE.matcher(value).matches()) {
+          value = value.substring(0, 10);
+        }
+        bundle.putString(property, value);
+        logger.verbose("bundle.putString(%s, %s);", property, value);
+        continue;
+      }
+      if (entry.getValue() instanceof Date) {
+        Date value = (Date) entry.getValue();
+        String formattedDate = formatDate(value);
+        bundle.putString(property, formattedDate);
+        logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
+        continue;
+      }
+    }
+    return bundle;
+  }
+
+  private String mapProperty(String property) {
     if (propertyMapper.containsKey(property)) {
       property = propertyMapper.get(property);
     }
-
     if (property.contains(" ")) {
       property = property.trim().replaceAll(" ", "_");
     }
-
     if (property.length() > 40) {
       property = trimKey(property);
     }
-
     return property;
-
   }
 
   private String trimKey(String string) {
