@@ -21,9 +21,7 @@ import com.segment.analytics.integrations.TrackPayload;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
-import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 import static com.segment.analytics.internal.Utils.toISO8601Date;
@@ -64,8 +62,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
         }
       };
 
-  static final Pattern ISO_DATE =
-          Pattern.compile("(^([0-9]{4})-(1[0-2]|0[1-9])-(0[1-9]|1[1-9]|2[0-9]|3[0-1]).*)", CASE_INSENSITIVE);
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics firebaseAnalytics;
@@ -150,8 +146,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       if (entry.getValue() instanceof Date) {
         Date value = (Date) entry.getValue();
         formattedValue = formatDate(value);
-      } else if (entry.getValue() instanceof String && ISO_DATE.matcher(String.valueOf(entry.getValue())).matches()) {
-        formattedValue = String.valueOf(entry.getValue()).substring(0, 10);
       } else {
         formattedValue = String.valueOf(entry.getValue());
       }
@@ -212,9 +206,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       }
       if (entry.getValue() instanceof String) {
         String value = String.valueOf(entry.getValue());
-        if (ISO_DATE.matcher(value).matches()) {
-          value = value.substring(0, 10);
-        }
         bundle.putString(property, value);
         logger.verbose("bundle.putString(%s, %s);", property, value);
         continue;
