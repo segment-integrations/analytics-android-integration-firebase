@@ -203,7 +203,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
         String formattedDate = FIREBASE_FORMAT.format(dateValue);
         bundle.putString(property, formattedDate);
         logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
-        continue;
       }
     }
     return bundle;
