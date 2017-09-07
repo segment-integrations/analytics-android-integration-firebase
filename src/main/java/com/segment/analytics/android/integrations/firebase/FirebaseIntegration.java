@@ -63,8 +63,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       };
 
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
-  final Logger logger;
-  final FirebaseAnalytics firebaseAnalytics;
   private static final Map<String, String> eventMapper = createEventMap();
 
   private static Map<String, String> createEventMap() {
@@ -104,9 +102,12 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     return propertyMapper;
   }
 
+  private final Logger logger;
+  private final FirebaseAnalytics firebaseAnalytics;
+
   public FirebaseIntegration(Context context, Logger logger) {
+    this.firebaseAnalytics = FirebaseAnalytics.getInstance(context);
     this.logger = logger;
-    firebaseAnalytics = FirebaseAnalytics.getInstance(context);
   }
 
   @Override
@@ -119,9 +120,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
           packageManager.getActivityInfo(activity.getComponentName(), PackageManager.GET_META_DATA);
       String activityLabel = info.loadLabel(packageManager).toString();
       firebaseAnalytics.setCurrentScreen(activity, activityLabel, null);
-      logger.verbose(
-          "firebaseAnalytics.setCurrentScreen(activity, %s, null);",
-          activityLabel);
+      logger.verbose("firebaseAnalytics.setCurrentScreen(activity, %s, null);", activityLabel);
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
     }
