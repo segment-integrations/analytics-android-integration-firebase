@@ -21,11 +21,10 @@ import com.segment.analytics.integrations.TrackPayload;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
-import static android.R.attr.key;
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
-import static com.segment.analytics.internal.Utils.toISO8601Date;
 
 /**
  * Google Analytics for Firebase is a free app measurement solution that provides insight on app
@@ -66,6 +65,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics firebaseAnalytics;
+  static final SimpleDateFormat FIREBASE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private static final Map<String, String> EVENT_MAPPER = createEventMap();
 
   private static Map<String, String> createEventMap() {
@@ -143,7 +143,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       String formattedValue;
       if (value instanceof Date) {
         Date dateValue = (Date) value;
-        formattedValue = formatDate(dateValue);
+        formattedValue = FIREBASE_FORMAT.format(dateValue);
       } else {
         formattedValue = String.valueOf(value);
       }
@@ -200,7 +200,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       }
       if (value instanceof Date) {
         Date dateValue = (Date) value;
-        String formattedDate = formatDate(dateValue);
+        String formattedDate = FIREBASE_FORMAT.format(dateValue);
         bundle.putString(property, formattedDate);
         logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
         continue;
@@ -209,7 +209,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     return bundle;
   }
 
-  private static String makeKey(String key) {
+  private String makeKey(String key) {
     if (EVENT_MAPPER.containsKey(key)) {
       key = EVENT_MAPPER.get(key);
     } else if (PROPERTY_MAPPER.containsKey(key)) {
@@ -218,11 +218,5 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       key = key.trim().replaceAll(" ", "_").substring(0, Math.min(key.length(), 40));
     }
     return key;
-  }
-
-  private static String formatDate(Date date) {
-    String stringifiedValue = toISO8601Date(date);
-    String truncatedValue = stringifiedValue.substring(0, 10);
-    return truncatedValue;
   }
 }
