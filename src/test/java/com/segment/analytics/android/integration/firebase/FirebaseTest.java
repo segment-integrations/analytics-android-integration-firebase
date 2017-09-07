@@ -119,12 +119,6 @@ public class FirebaseTest {
         verify(firebase).logEvent(eq("foo"), bundleEq(expected));
     }
 
-    @Test
-    public void testMakeKey() {
-        String string = " long event name with random spaces that is more than forty characters long           ";
-        assertThat(integration.makeKey(string)).isEqualTo("long_event_name_with_random_spaces_that_");
-    }
-
     public static Bundle bundleEq(Bundle expected) {
         return argThat(new BundleObjectMatcher(expected));
     }
