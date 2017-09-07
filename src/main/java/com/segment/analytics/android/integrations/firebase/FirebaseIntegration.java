@@ -138,13 +138,14 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     Map<String, Object> traits = identify.traits();
     for (Map.Entry<String, Object> entry : traits.entrySet()) {
       String trait = entry.getKey();
+      Object value = entry.getValue();
       trait = makeKey(trait);
       String formattedValue;
-      if (entry.getValue() instanceof Date) {
-        Date value = (Date) entry.getValue();
-        formattedValue = formatDate(value);
+      if (value instanceof Date) {
+        Date dateValue = (Date) value;
+        formattedValue = formatDate(dateValue);
       } else {
-        formattedValue = String.valueOf(entry.getValue());
+        formattedValue = String.valueOf(value);
       }
       firebaseAnalytics.setUserProperty(trait, formattedValue);
       logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
@@ -156,20 +157,11 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     super.track(track);
 
     String event = track.event();
-    String eventName = mapEvent(event);
+    String eventName = makeKey(event);
     Properties properties = track.properties();
     Bundle formattedProperties = formatProperties(properties);
     firebaseAnalytics.logEvent(eventName, formattedProperties);
     logger.verbose("firebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
-  }
-
-  private String mapEvent(String event) {
-    String eventName = event;
-    if (EVENT_MAPPER.containsKey(eventName)) {
-      eventName = EVENT_MAPPER.get(eventName);
-    }
-    eventName = makeKey(eventName);
-    return eventName;
   }
 
   private Bundle formatProperties(Properties properties) {
@@ -181,7 +173,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
       Object value = entry.getValue();
       String property = entry.getKey();
-      property = mapProperty(property);
+      property = makeKey(property);
       if (value instanceof Integer) {
         int intValue = (int) value;
         bundle.putInt(property, intValue);
@@ -217,17 +209,15 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     return bundle;
   }
 
-  private String mapProperty(String property) {
-    if (PROPERTY_MAPPER.containsKey(property)) {
-      property = PROPERTY_MAPPER.get(property);
-    }
-    property = makeKey(property);
-    return property;
-  }
-
   private static String makeKey(String key) {
-    String newKey = key.trim().replaceAll(" ", "_");
-    return newKey.substring(0, Math.min(newKey.length(), 40));
+    if (EVENT_MAPPER.containsKey(key)) {
+      key = EVENT_MAPPER.get(key);
+    } else if (PROPERTY_MAPPER.containsKey(key)) {
+      key = PROPERTY_MAPPER.get(key);
+    } else {
+      key = key.trim().replaceAll(" ", "_").substring(0, Math.min(key.length(), 40));
+    }
+    return key;
   }
 
   private static String formatDate(Date date) {
