@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Date;
 
+import static android.R.attr.key;
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 import static com.segment.analytics.internal.Utils.toISO8601Date;
@@ -65,43 +66,43 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   final Logger logger;
   final FirebaseAnalytics firebaseAnalytics;
-  private static final Map<String, String> eventMapper = createEventMap();
+  private static final Map<String, String> EVENT_MAPPER = createEventMap();
 
   private static Map<String, String> createEventMap() {
-    Map<String, String> eventMapper = new HashMap<>();
-    eventMapper.put("Product Added", Event.ADD_TO_CART);
-    eventMapper.put("Checkout Started", Event.BEGIN_CHECKOUT);
-    eventMapper.put("Order Completed", Event.ECOMMERCE_PURCHASE);
-    eventMapper.put("Order Refunded", Event.PURCHASE_REFUND);
-    eventMapper.put("Product Viewed", Event.VIEW_ITEM);
-    eventMapper.put("Product List Viewed", Event.VIEW_ITEM_LIST);
-    eventMapper.put("Payment Info Entered", Event.ADD_PAYMENT_INFO);
-    eventMapper.put("Promotion Viewed", Event.PRESENT_OFFER);
-    eventMapper.put("Product Added to Wishlist", Event.ADD_TO_WISHLIST);
-    eventMapper.put("Product Shared", Event.SHARE);
-    eventMapper.put("Product Clicked", Event.SELECT_CONTENT);
-    eventMapper.put("Product Searched", Event.SEARCH);
-    eventMapper.put("Promotion Viewed", Event.PRESENT_OFFER);
-    return eventMapper;
+    Map<String, String> EVENT_MAPPER = new HashMap<>();
+    EVENT_MAPPER.put("Product Added", Event.ADD_TO_CART);
+    EVENT_MAPPER.put("Checkout Started", Event.BEGIN_CHECKOUT);
+    EVENT_MAPPER.put("Order Completed", Event.ECOMMERCE_PURCHASE);
+    EVENT_MAPPER.put("Order Refunded", Event.PURCHASE_REFUND);
+    EVENT_MAPPER.put("Product Viewed", Event.VIEW_ITEM);
+    EVENT_MAPPER.put("Product List Viewed", Event.VIEW_ITEM_LIST);
+    EVENT_MAPPER.put("Payment Info Entered", Event.ADD_PAYMENT_INFO);
+    EVENT_MAPPER.put("Promotion Viewed", Event.PRESENT_OFFER);
+    EVENT_MAPPER.put("Product Added to Wishlist", Event.ADD_TO_WISHLIST);
+    EVENT_MAPPER.put("Product Shared", Event.SHARE);
+    EVENT_MAPPER.put("Product Clicked", Event.SELECT_CONTENT);
+    EVENT_MAPPER.put("Product Searched", Event.SEARCH);
+    EVENT_MAPPER.put("Promotion Viewed", Event.PRESENT_OFFER);
+    return EVENT_MAPPER;
   }
 
-  private static final Map<String, String> propertyMapper = createPropertyMap();
+  private static final Map<String, String> PROPERTY_MAPPER = createPropertyMap();
 
   private static Map<String, String> createPropertyMap() {
-    Map<String, String> propertyMapper = new HashMap<>();
-    propertyMapper.put("category", Param.ITEM_CATEGORY);
-    propertyMapper.put("product_id", Param.ITEM_ID);
-    propertyMapper.put("name", Param.ITEM_NAME);
-    propertyMapper.put("price", Param.PRICE);
-    propertyMapper.put("quantity", Param.QUANTITY);
-    propertyMapper.put("query", Param.SEARCH_TERM);
-    propertyMapper.put("shipping", Param.SHIPPING);
-    propertyMapper.put("tax", Param.TAX);
-    propertyMapper.put("total", Param.VALUE);
-    propertyMapper.put("revenue", Param.VALUE);
-    propertyMapper.put("order_id", Param.TRANSACTION_ID);
-    propertyMapper.put("currency", Param.CURRENCY);
-    return propertyMapper;
+    Map<String, String> PROPERTY_MAPPER = new HashMap<>();
+    PROPERTY_MAPPER.put("category", Param.ITEM_CATEGORY);
+    PROPERTY_MAPPER.put("product_id", Param.ITEM_ID);
+    PROPERTY_MAPPER.put("name", Param.ITEM_NAME);
+    PROPERTY_MAPPER.put("price", Param.PRICE);
+    PROPERTY_MAPPER.put("quantity", Param.QUANTITY);
+    PROPERTY_MAPPER.put("query", Param.SEARCH_TERM);
+    PROPERTY_MAPPER.put("shipping", Param.SHIPPING);
+    PROPERTY_MAPPER.put("tax", Param.TAX);
+    PROPERTY_MAPPER.put("total", Param.VALUE);
+    PROPERTY_MAPPER.put("revenue", Param.VALUE);
+    PROPERTY_MAPPER.put("order_id", Param.TRANSACTION_ID);
+    PROPERTY_MAPPER.put("currency", Param.CURRENCY);
+    return PROPERTY_MAPPER;
   }
 
   public FirebaseIntegration(Context context, Logger logger) {
@@ -137,10 +138,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     Map<String, Object> traits = identify.traits();
     for (Map.Entry<String, Object> entry : traits.entrySet()) {
       String trait = entry.getKey();
-      trait = trait.trim().replaceAll(" ", "_");
-      if (trait.length() > 40) {
-        trait = trimKey(trait);
-      }
+      trait = makeKey(trait);
       String formattedValue;
       if (entry.getValue() instanceof Date) {
         Date value = (Date) entry.getValue();
@@ -167,13 +165,10 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private String mapEvent(String event) {
     String eventName = event;
-    if (eventMapper.containsKey(eventName)) {
-      eventName = eventMapper.get(eventName);
+    if (EVENT_MAPPER.containsKey(eventName)) {
+      eventName = EVENT_MAPPER.get(eventName);
     }
-    eventName = eventName.trim().replaceAll(" ", "_");
-    if (eventName.length() > 40) {
-      eventName = trimKey(eventName);
-    }
+    eventName = makeKey(eventName);
     return eventName;
   }
 
@@ -184,35 +179,36 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       bundle.putString(Param.CURRENCY, "USD");
     }
     for (Map.Entry<String, Object> entry : properties.entrySet()) {
+      Object value = entry.getValue();
       String property = entry.getKey();
       property = mapProperty(property);
-      if (entry.getValue() instanceof Integer) {
-        int value = (int) entry.getValue();
-        bundle.putInt(property, value);
-        logger.verbose("bundle.putInt(%s, %s);", property, value);
+      if (value instanceof Integer) {
+        int intValue = (int) value;
+        bundle.putInt(property, intValue);
+        logger.verbose("bundle.putInt(%s, %s);", property, intValue);
         continue;
       }
-      if (entry.getValue() instanceof Double) {
-        double value = (double) entry.getValue();
-        bundle.putDouble(property, value);
-        logger.verbose("bundle.putDouble(%s, %s);", property, value);
+      if (value instanceof Double) {
+        double doubleValue = (double) value;
+        bundle.putDouble(property, doubleValue);
+        logger.verbose("bundle.putDouble(%s, %s);", property, doubleValue);
         continue;
       }
-      if (entry.getValue() instanceof Long) {
-        long value = (long) entry.getValue();
-        bundle.putLong(property, value);
-        logger.verbose("bundle.putLong(%s, %s);", property, value);
+      if (value instanceof Long) {
+        long longValue = (long) value;
+        bundle.putLong(property, longValue);
+        logger.verbose("bundle.putLong(%s, %s);", property, longValue);
         continue;
       }
-      if (entry.getValue() instanceof String) {
-        String value = String.valueOf(entry.getValue());
-        bundle.putString(property, value);
-        logger.verbose("bundle.putString(%s, %s);", property, value);
+      if (value instanceof String) {
+        String stringValue = String.valueOf(value);
+        bundle.putString(property, stringValue);
+        logger.verbose("bundle.putString(%s, %s);", property, stringValue);
         continue;
       }
-      if (entry.getValue() instanceof Date) {
-        Date value = (Date) entry.getValue();
-        String formattedDate = formatDate(value);
+      if (value instanceof Date) {
+        Date dateValue = (Date) value;
+        String formattedDate = formatDate(dateValue);
         bundle.putString(property, formattedDate);
         logger.verbose("bundle.putString(%s, %s);", property, formattedDate);
         continue;
@@ -222,21 +218,19 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   }
 
   private String mapProperty(String property) {
-    if (propertyMapper.containsKey(property)) {
-      property = propertyMapper.get(property);
+    if (PROPERTY_MAPPER.containsKey(property)) {
+      property = PROPERTY_MAPPER.get(property);
     }
-    property = property.trim().replaceAll(" ", "_");
-    if (property.length() > 40) {
-      property = trimKey(property);
-    }
+    property = makeKey(property);
     return property;
   }
 
-  private String trimKey(String string) {
-    return string.substring(0, Math.min(string.length(), 40));
+  private static String makeKey(String key) {
+    String newKey = key.trim().replaceAll(" ", "_");
+    return newKey.substring(0, Math.min(newKey.length(), 40));
   }
 
-  private String formatDate(Date date) {
+  private static String formatDate(Date date) {
     String stringifiedValue = toISO8601Date(date);
     String truncatedValue = stringifiedValue.substring(0, 10);
     return truncatedValue;
