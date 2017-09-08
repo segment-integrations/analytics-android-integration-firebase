@@ -20,8 +20,6 @@ import com.segment.analytics.integrations.TrackPayload;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date;
-import java.text.SimpleDateFormat;
 
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
