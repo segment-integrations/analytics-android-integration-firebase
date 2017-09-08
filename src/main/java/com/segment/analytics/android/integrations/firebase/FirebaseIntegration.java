@@ -65,7 +65,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static final String FIREBASE_ANALYTICS_KEY = "Firebase";
   private final Logger logger;
   private final FirebaseAnalytics firebaseAnalytics;
-  static final SimpleDateFormat FIREBASE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
   private static final Map<String, String> EVENT_MAPPER = createEventMap();
 
   private static Map<String, String> createEventMap() {
@@ -136,17 +135,10 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     Map<String, Object> traits = identify.traits();
     for (Map.Entry<String, Object> entry : traits.entrySet()) {
       String trait = entry.getKey();
-      Object value = entry.getValue();
+      String value = String.valueOf(entry.getValue());
       trait = makeKey(trait);
-      String formattedValue;
-      if (value instanceof Date) {
-        Date dateValue = (Date) value;
-        formattedValue = FIREBASE_FORMAT.format(dateValue);
-      } else {
-        formattedValue = String.valueOf(value);
-      }
-      firebaseAnalytics.setUserProperty(trait, formattedValue);
-      logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, formattedValue);
+      firebaseAnalytics.setUserProperty(trait, value);
+      logger.verbose("firebaseAnalytics.setUserProperty(%s, %s);", trait, value);
     }
   }
 
@@ -190,10 +182,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       } else if (value instanceof Long) {
         long longValue = (long) value;
         bundle.putLong(property, longValue);
-      } else if (value instanceof Date) {
-        Date dateValue = (Date) value;
-        String formattedDate = FIREBASE_FORMAT.format(dateValue);
-        bundle.putString(property, formattedDate);
       } else {
         String stringValue = String.valueOf(value);
         bundle.putString(property, stringValue);
