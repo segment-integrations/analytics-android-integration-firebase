@@ -1,8 +1,8 @@
 analytics-android-integration-firebase
 =======================================
 
-[![Maven Central]()
-[![Javadocs]()
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/firebase/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/firebase)
+[![Javadocs](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/firebase.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/firebase)
 
 Firebase Analytics integration for [analytics-android](https://github.com/segmentio/analytics-android).
 
@@ -11,7 +11,7 @@ Firebase Analytics integration for [analytics-android](https://github.com/segmen
 To install the Segment-Firebase integration, simply add this line to your gradle file:
 
 ```
-compile 'com.segment.analytics.android.integrations:firebase-analytics:+'
+compile 'com.segment.analytics.android.integrations:firebase:+'
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ After adding the dependency, you must register the integration with our SDK.  To
 
 
 ```
-import com.segment.analytics.android.integrations.firebase-analytics.FirebaseIntegration;
+import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
 
 ```
 
