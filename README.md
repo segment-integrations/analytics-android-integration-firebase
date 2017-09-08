@@ -1,26 +1,26 @@
-analytics-android-integration-quantcast
+analytics-android-integration-firebase
 =======================================
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/quantcast/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/quantcast)
-[![Javadocs](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/quantcast.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/quantcast)
+[![Maven Central]()
+[![Javadocs]()
 
-Quantcast integration for [analytics-android](https://github.com/segmentio/analytics-android).
+Firebase Analytics integration for [analytics-android](https://github.com/segmentio/analytics-android).
 
 ## Installation
 
-To install the Segment-Quantcast integration, simply add this line to your gradle file:
+To install the Segment-Firebase integration, simply add this line to your gradle file:
 
 ```
-compile 'com.segment.analytics.android.integrations:quantcast:+'
+compile 'com.segment.analytics.android.integrations:firebase-analytics:+'
 ```
 
 ## Usage
 
-After adding the dependency, you must register the integration with our SDK.  To do this, import the Quantcast integration:
+After adding the dependency, you must register the integration with our SDK.  To do this, import the Firebase integration:
 
 
 ```
-import com.segment.analytics.android.integrations.quantcast.QuantcastIntegration;
+import com.segment.analytics.android.integrations.firebase-analytics.FirebaseIntegration;
 
 ```
 
@@ -28,11 +28,11 @@ And add the following line:
 
 ```
 analytics = new Analytics.Builder(this, "write_key")
-                .use(QuantcastIntegration.FACTORY)
+                .use(FirebaseIntegration.FACTORY)
                 .build();
 ```
 
-Please see [our documentation](https://segment.com/docs/integrations/quantcast/) for more information.
+Please see [our documentation](https://segment.com/docs/integrations/firebase-analytics/) for more information.
 
 
 ## License
