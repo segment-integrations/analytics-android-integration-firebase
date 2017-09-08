@@ -6,7 +6,7 @@
 # http://benlimmer.com/2013/12/26/automatically-publish-javadoc-to-gh-pages-with-travis-ci/
 # and https://github.com/square/javawriter
 
-REPO="analytics-android-integration-quantcast"
+REPO="analytics-android-integration-firebase"
 USERNAME="segment-integrations"
 JDK="oraclejdk8"
 BRANCH="master"
