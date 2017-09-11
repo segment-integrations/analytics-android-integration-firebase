@@ -73,7 +73,7 @@ public class FirebaseTest {
                 .putFirstName("bar")
                 .putLastName("baz")
                 .putValue("anonymousId", 123)
-                .putValue("Sign Up Date", new Date())
+                .putValue("Sign Up Date", new Date(117, 6, 14))
                 .putValue("  extra spaces        ", "bar");
 
 
@@ -83,7 +83,7 @@ public class FirebaseTest {
         verify(firebase).setUserProperty("firstName", "bar");
         verify(firebase).setUserProperty("lastName", "baz");
         verify(firebase).setUserProperty("anonymousId", "123");
-        verify(firebase).setUserProperty("Sign_Up_Date", "2017-09-07");
+        verify(firebase).setUserProperty("Sign_Up_Date", "Fri Jul 14 00:00:00 PDT 2017");
         verify(firebase).setUserProperty("extra_spaces", "bar");
     }
 
@@ -110,7 +110,7 @@ public class FirebaseTest {
         expected.putInt("integer", 1);
         expected.putDouble("double", 1.0);
         expected.putString("string", "foo");
-        expected.putString("date", "2017-01-01");
+        expected.putString("date", "Sun Jan 01 00:00:00 PST 2017");
         expected.putString("key_with_spaces", "bar");
         expected.putDouble("value", 100.0);
         expected.putString("currency", "USD");
