@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import static org.mockito.Matchers.argThat;
@@ -76,14 +77,13 @@ public class FirebaseTest {
                 .putValue("Sign Up Date", new Date(117, 6, 14))
                 .putValue("  extra spaces        ", "bar");
 
-
         integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
 
         verify(firebase).setUserId("foo");
         verify(firebase).setUserProperty("firstName", "bar");
         verify(firebase).setUserProperty("lastName", "baz");
         verify(firebase).setUserProperty("anonymousId", "123");
-        verify(firebase).setUserProperty("Sign_Up_Date", "Fri Jul 14 00:00:00 PDT 2017");
+        verify(firebase).setUserProperty("Sign_Up_Date", String.valueOf(new Date(117, 6, 14)));
         verify(firebase).setUserProperty("extra_spaces", "bar");
     }
 
@@ -110,7 +110,7 @@ public class FirebaseTest {
         expected.putInt("integer", 1);
         expected.putDouble("double", 1.0);
         expected.putString("string", "foo");
-        expected.putString("date", "Sun Jan 01 00:00:00 PST 2017");
+        expected.putString("date", String.valueOf(new Date(117, 0, 1)));
         expected.putString("key_with_spaces", "bar");
         expected.putDouble("value", 100.0);
         expected.putString("currency", "USD");
