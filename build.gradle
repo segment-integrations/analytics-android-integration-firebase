@@ -1,10 +1,11 @@
 buildscript {
   repositories {
     jcenter()
+    google()
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.3.3'
+    classpath 'com.android.tools.build:gradle:3.1.3'
     classpath 'com.f2prateek.javafmt:javafmt:0.1.6'
   }
 }
@@ -14,7 +15,7 @@ apply plugin: 'com.f2prateek.javafmt'
 
 android {
   compileSdkVersion 26
-  buildToolsVersion '25.0.3'
+  buildToolsVersion '27.0.3'
 
   defaultConfig {
     minSdkVersion 14
@@ -40,25 +41,25 @@ dependencies {
     }
   }
 
-  compile 'com.google.firebase:firebase-core:11.2.0'
+  implementation 'com.google.firebase:firebase-core:16.0.1'
 
-  compile 'com.segment.analytics.android:analytics:4.2.6'
+  implementation 'com.segment.analytics.android:analytics:4.2.6'
 
-  testCompile 'com.segment.analytics.android:analytics-tests:4.2.6'
+  testImplementation 'com.segment.analytics.android:analytics-tests:4.2.6'
 
-  testCompile 'junit:junit:4.12'
+  testImplementation 'junit:junit:4.12'
 
-  testCompile 'org.robolectric:robolectric:3.4.2'
+  testImplementation 'org.robolectric:robolectric:3.4.2'
 
-  testCompile 'org.assertj:assertj-core:1.7.1'
+  testImplementation 'org.assertj:assertj-core:1.7.1'
 
-  testCompile 'org.mockito:mockito-core:1.10.19'
+  testImplementation 'org.mockito:mockito-core:1.10.19'
 
-  testCompile 'org.powermock:powermock:1.6.6'
-  testCompile 'org.powermock:powermock-module-junit4:1.6.6'
-  testCompile 'org.powermock:powermock-module-junit4-rule:1.6.6'
-  testCompile 'org.powermock:powermock-api-mockito:1.6.6'
-  testCompile 'org.powermock:powermock-classloading-xstream:1.6.6'
+  testImplementation 'org.powermock:powermock:1.6.6'
+  testImplementation 'org.powermock:powermock-module-junit4:1.6.6'
+  testImplementation 'org.powermock:powermock-module-junit4-rule:1.6.6'
+  testImplementation 'org.powermock:powermock-api-mockito:1.6.6'
+  testImplementation 'org.powermock:powermock-classloading-xstream:1.6.6'
 }
 
 apply plugin: 'com.f2prateek.javafmt'
