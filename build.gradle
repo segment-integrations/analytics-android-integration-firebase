@@ -41,7 +41,7 @@ dependencies {
     }
   }
 
-  implementation 'com.google.firebase:firebase-core:11.2.0'
+  implementation 'com.google.firebase:firebase-core:16.0.3'
 
   implementation 'com.segment.analytics.android:analytics:4.2.6'
 
