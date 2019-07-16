@@ -55,7 +55,7 @@ dependencies {
   }
 
   api 'com.segment.analytics.android:analytics:4.3.1'
-  api 'com.google.firebase:firebase-core:16.0.3'
+  api 'com.google.firebase:firebase-core:17.0.1'
 
   testImplementation 'com.segment.analytics.android:analytics-tests:4.3.1'
   testImplementation 'junit:junit:4.12'
