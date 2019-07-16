@@ -5,37 +5,42 @@ import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.segment.analytics.Properties;
-import com.segment.analytics.Traits;
 import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
-import com.segment.analytics.core.tests.BuildConfig;
+import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
-import com.segment.analytics.test.IdentifyPayloadBuilder;
+import com.segment.analytics.integrations.TrackPayload;
 import com.segment.analytics.test.TrackPayloadBuilder;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatcher;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.rule.PowerMockRule;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
-import static com.segment.analytics.Utils.createTraits;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 @PowerMockIgnore({ "org.mockito.*", "org.roboelectric.*", "android.*" })
 @PrepareForTest(FirebaseAnalytics.class)
 public class FirebaseTest {
@@ -58,34 +63,32 @@ public class FirebaseTest {
 
     @Test
     public void identify() {
-        Traits traits = createTraits("foo");
-        integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
+        integration.identify(new IdentifyPayload.Builder().userId("foo").traits(new HashMap<String, Object>()).build());
         verify(firebase).setUserId("foo");
     }
 
     @Test
     public void identifyWithTraits() {
-        Traits traits = createTraits("foo")
-                .putAge(20)
-                .putFirstName("bar")
-                .putLastName("baz")
-                .putValue("anonymousId", 123)
-                .putValue("Sign Up Date", new Date(117, 6, 14))
-                .putValue("  extra spaces        ", "bar");
+        Map<String, Object> traits = new HashMap<>();
+        traits.put("age", 20);
+        traits.put("firstName", "bar");
+        traits.put("lastName", "baz");
+        traits.put("Sign Up Date", new Date(117, 6, 14));
+        traits.put("  extra spaces        ", "bar");
 
-        integration.identify(new IdentifyPayloadBuilder().traits(traits).build());
+        integration.identify(new IdentifyPayload.Builder().userId("foo").anonymousId("123").traits(traits).build());
 
         verify(firebase).setUserId("foo");
         verify(firebase).setUserProperty("firstName", "bar");
         verify(firebase).setUserProperty("lastName", "baz");
-        verify(firebase).setUserProperty("anonymousId", "123");
         verify(firebase).setUserProperty("Sign_Up_Date", String.valueOf(new Date(117, 6, 14)));
         verify(firebase).setUserProperty("extra_spaces", "bar");
+        verify(firebase).setUserProperty("age", "20");
     }
 
     @Test
     public void track() {
-        integration.track(new TrackPayloadBuilder().event("foo").build());
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("foo").build());
         verify(firebase).logEvent(eq("foo"), bundleEq(new Bundle()));
     }
 
@@ -100,7 +103,7 @@ public class FirebaseTest {
                 .putValue("total", 100.0)
                 .putValue("  extra spaces   ", "baz");
 
-        integration.track(new TrackPayloadBuilder().properties(properties).event("foo").build());
+        integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("foo").build());
 
         Bundle expected = new Bundle();
         expected.putInt("integer", 1);
@@ -115,24 +118,48 @@ public class FirebaseTest {
         verify(firebase).logEvent(eq("foo"), bundleEq(expected));
     }
 
+    /**
+     * Uses the string representation of the object. Useful for JSON objects.
+     * @param expected Expected object
+     * @return Argument matcher.
+     */
+    private JSONObject jsonEq(JSONObject expected) {
+        return argThat(new JSONMatcher(expected));
+    }
+
+    class JSONMatcher implements ArgumentMatcher<JSONObject> {
+        JSONObject expected;
+
+        JSONMatcher(JSONObject expected) {
+            this.expected = expected;
+        }
+
+        @Override
+        public boolean matches(JSONObject argument) {
+            try {
+                JSONAssert.assertEquals(expected, argument, JSONCompareMode.STRICT);
+                return true;
+            } catch (JSONException e) {
+                return false;
+            }
+        }
+    }
+
     public static Bundle bundleEq(Bundle expected) {
         return argThat(new BundleObjectMatcher(expected));
     }
 
-    private static class BundleObjectMatcher extends TypeSafeMatcher<Bundle> {
-        private final Bundle expected;
+    private static class BundleObjectMatcher implements ArgumentMatcher<Bundle> {
+        Bundle expected;
 
         private BundleObjectMatcher(Bundle expected) {
             this.expected = expected;
         }
 
-        @Override public boolean matchesSafely(Bundle bundleObject) {
-            // todo: this relies on having the same order
-            return expected.toString().equals(bundleObject.toString());
+        @Override
+        public boolean matches(Bundle bundle) {
+            return expected.toString().equals(bundle.toString());
         }
 
-        @Override public void describeTo(Description description) {
-            description.appendText(expected.toString());
-        }
     }
 }
