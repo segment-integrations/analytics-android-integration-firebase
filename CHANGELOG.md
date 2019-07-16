@@ -1,4 +1,10 @@
 
+1.3.0 / 2019-07-16
+==================
+*(Supports analytics-android 4.3.1 and Firebase Core 17.0.1)*
+
+  * [DEST-854] Update build and bump Firebase to 17.0.1 (#19)
+
 Version 1.2.0 (3rd October, 2018)
 ===================================
 *(Supports analytics-android 4.2.6 and Firebase Core 16.0.3)*
