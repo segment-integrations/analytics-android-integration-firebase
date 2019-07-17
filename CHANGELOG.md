@@ -1,4 +1,9 @@
 
+1.3.1 / 2019-07-17
+==================
+
+  * Change to `implementation`
+
 1.3.0 / 2019-07-16
 ==================
 *(Supports analytics-android 4.3.1 and Firebase Core 17.0.1)*
