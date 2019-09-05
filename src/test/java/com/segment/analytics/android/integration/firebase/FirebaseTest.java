@@ -115,6 +115,34 @@ public class FirebaseTest {
         verify(firebase).logEvent(eq("foo"), bundleEq(expected));
     }
 
+    @Test
+    public void trackWithEventNameTransformation() {
+        Properties properties = new Properties()
+                .putValue("integer", 1)
+                .putValue("double", 1.0)
+                .putValue("string", "foo")
+                .putValue("date", new Date(117, 0, 1))
+                .putValue("key with spaces", "bar")
+                .putValue("key.with.periods", "test")
+                .putValue("total", 100.0)
+                .putValue("  extra spaces   ", "baz");
+
+        integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("foo.bar").build());
+
+        Bundle expected = new Bundle();
+        expected.putInt("integer", 1);
+        expected.putDouble("double", 1.0);
+        expected.putString("string", "foo");
+        expected.putString("date", String.valueOf(new Date(117, 0, 1)));
+        expected.putString("key_with_spaces", "bar");
+        expected.putString("key_with_periods", "test");
+        expected.putDouble("value", 100.0);
+        expected.putString("currency", "USD");
+        expected.putString("extra_spaces", "baz");
+
+        verify(firebase).logEvent(eq("foo_bar"), bundleEq(expected));
+    }
+
     /**
      * Uses the string representation of the object. Useful for JSON objects.
      * @param expected Expected object
