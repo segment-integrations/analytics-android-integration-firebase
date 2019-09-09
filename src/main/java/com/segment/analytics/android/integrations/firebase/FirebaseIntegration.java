@@ -79,7 +79,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     EVENT_MAPPER.put("Product Shared", Event.SHARE);
     EVENT_MAPPER.put("Product Clicked", Event.SELECT_CONTENT);
     EVENT_MAPPER.put("Product Searched", Event.SEARCH);
-    EVENT_MAPPER.put("Promotion Viewed", Event.PRESENT_OFFER);
     return EVENT_MAPPER;
   }
 
@@ -189,7 +188,11 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   }
 
   public static String makeKey(String key) {
-    key = key.trim().replaceAll(" ", "_");
+    if (key.contains(".")) {
+      key = key.trim().replace(".", "_");
+    } else {
+      key = key.trim().replaceAll(" ", "_");
+    }
     return key.substring(0, Math.min(key.length(), 40));
   }
 }

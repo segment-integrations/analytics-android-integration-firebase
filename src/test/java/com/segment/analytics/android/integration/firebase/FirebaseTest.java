@@ -9,10 +9,7 @@ import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
-import com.segment.analytics.test.TrackPayloadBuilder;
 
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -20,7 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
-import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -37,7 +33,6 @@ import java.util.Map;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
@@ -100,6 +95,7 @@ public class FirebaseTest {
                 .putValue("string", "foo")
                 .putValue("date", new Date(117, 0, 1))
                 .putValue("key with spaces", "bar")
+                .putValue("key.with.periods", "test")
                 .putValue("total", 100.0)
                 .putValue("  extra spaces   ", "baz");
 
@@ -111,11 +107,40 @@ public class FirebaseTest {
         expected.putString("string", "foo");
         expected.putString("date", String.valueOf(new Date(117, 0, 1)));
         expected.putString("key_with_spaces", "bar");
+        expected.putString("key_with_periods", "test");
         expected.putDouble("value", 100.0);
         expected.putString("currency", "USD");
         expected.putString("extra_spaces", "baz");
 
         verify(firebase).logEvent(eq("foo"), bundleEq(expected));
+    }
+
+    @Test
+    public void trackWithEventNameTransformation() {
+        Properties properties = new Properties()
+                .putValue("integer", 1)
+                .putValue("double", 1.0)
+                .putValue("string", "foo")
+                .putValue("date", new Date(117, 0, 1))
+                .putValue("key with spaces", "bar")
+                .putValue("key.with.periods", "test")
+                .putValue("total", 100.0)
+                .putValue("  extra spaces   ", "baz");
+
+        integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("foo.bar").build());
+
+        Bundle expected = new Bundle();
+        expected.putInt("integer", 1);
+        expected.putDouble("double", 1.0);
+        expected.putString("string", "foo");
+        expected.putString("date", String.valueOf(new Date(117, 0, 1)));
+        expected.putString("key_with_spaces", "bar");
+        expected.putString("key_with_periods", "test");
+        expected.putDouble("value", 100.0);
+        expected.putString("currency", "USD");
+        expected.putString("extra_spaces", "baz");
+
+        verify(firebase).logEvent(eq("foo_bar"), bundleEq(expected));
     }
 
     /**
