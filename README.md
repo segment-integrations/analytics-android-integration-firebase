@@ -14,6 +14,13 @@ To install the Segment-Firebase integration, simply add this line to your gradle
 compile 'com.segment.analytics.android.integrations:firebase:+'
 ```
 
+### Note
+To use firebase-integrations 1.4.+ :
+* `Update your app to use (AndroidX) or Android 29`
+* `Upgrade com.android.tools.build:gradle to v3.2.1 or later`
+
+For Android 28 or Lower: [here](https://search.maven.org/artifact/com.segment.analytics.android.integrations/firebase/1.2.0/aar)
+
 Don't forget to add the following dependencies to make sure [Firebase works](https://firebase.google.com/docs/android/setup/):
 ```
 apply plugin: 'com.android.application'
