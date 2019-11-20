@@ -1,5 +1,6 @@
 2.0.0 / 2019-11-15
 ==================
+*(Supports Android 29+ and Gradle 3.2.1+)*
 
   * Bump Firebase to 17.2.1
 
