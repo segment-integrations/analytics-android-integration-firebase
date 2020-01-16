@@ -17,6 +17,7 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
+import com.segment.analytics.integrations.ScreenPayload;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -101,6 +102,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     return PROPERTY_MAPPER;
   }
 
+  private Activity currentActivity;
+
   public FirebaseIntegration(Context context, Logger logger) {
     this.logger = logger;
     this.firebaseAnalytics = FirebaseAnalytics.getInstance(context);
@@ -120,6 +123,20 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     } catch (PackageManager.NameNotFoundException e) {
       throw new AssertionError("Activity Not Found: " + e.toString());
     }
+  }
+
+  @Override
+  public void onActivityStarted(Activity activity) {
+    super.onActivityStarted(activity);
+
+    this.currentActivity = activity;
+  }
+
+  @Override
+  public void onActivityStopped(Activity activity) {
+    super.onActivityStopped(activity);
+
+    this.currentActivity = null;
   }
 
   @Override
@@ -154,6 +171,15 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     Bundle formattedProperties = formatProperties(properties);
     firebaseAnalytics.logEvent(eventName, formattedProperties);
     logger.verbose("firebaseAnalytics.logEvent(%s, %s);", eventName, formattedProperties);
+  }
+
+  @Override
+  public void screen(ScreenPayload screen) {
+    super.screen(screen);
+
+    if (this.currentActivity != null) {
+      firebaseAnalytics.setCurrentScreen(this.currentActivity, screen.name(), null);
+    }
   }
 
   private static Bundle formatProperties(Properties properties) {
