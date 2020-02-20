@@ -65,6 +65,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private final Logger logger;
   private final FirebaseAnalytics firebaseAnalytics;
   private static final Map<String, String> EVENT_MAPPER = createEventMap();
+  private Activity currentActivity;
 
   private static Map<String, String> createEventMap() {
     Map<String, String> EVENT_MAPPER = new HashMap<>();
@@ -101,8 +102,6 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PROPERTY_MAPPER.put("currency", Param.CURRENCY);
     return PROPERTY_MAPPER;
   }
-
-  private Activity currentActivity;
 
   public FirebaseIntegration(Context context, Logger logger) {
     this.logger = logger;
