@@ -1,18 +1,16 @@
 package com.segment.analytics.android.integration.firebase;
 
-import android.content.Context;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
+import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
-import com.segment.analytics.integrations.TrackPayload;
 import com.segment.analytics.integrations.ScreenPayload;
+import com.segment.analytics.integrations.TrackPayload;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,9 +35,9 @@ import java.util.Map;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
 @PowerMockIgnore({ "org.mockito.*", "org.roboelectric.*", "android.*" })
