@@ -1,5 +1,6 @@
 package com.segment.analytics.android.integration.firebase;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -8,6 +9,7 @@ import com.segment.analytics.Properties;
 import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
+import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
 
 import org.json.JSONException;
@@ -33,6 +35,8 @@ import java.util.Map;
 import static com.segment.analytics.Analytics.LogLevel.VERBOSE;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.verify;
 
 @RunWith(RobolectricTestRunner.class)
@@ -141,6 +145,16 @@ public class FirebaseTest {
         expected.putString("extra_spaces", "baz");
 
         verify(firebase).logEvent(eq("foo_bar"), bundleEq(expected));
+    }
+
+    @Test
+    public void trackScreenWithName() {
+        final Activity activity = PowerMockito.mock(Activity.class);
+        integration.onActivityStarted(activity);
+
+        integration.screen(new ScreenPayload.Builder().anonymousId("1234").name("home_screen").build());
+
+        verify(firebase).setCurrentScreen(any(Activity.class), eq("home_screen"), (String) isNull());
     }
 
     /**

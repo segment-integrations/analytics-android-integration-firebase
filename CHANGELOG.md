@@ -1,3 +1,7 @@
+2.1.0 / 2020-02-20
+==================
+  * Add support for explicitly tracking screen calls.
+
 2.0.0 / 2019-11-15
 ==================
 *(Supports Android 29+ and Gradle 3.2.1+)*
@@ -37,4 +41,4 @@ Version 1.0.0 (7th September, 2017)
 ===================================
 *(Supports analytics-android 4.2.6 and Firebase Core 11.2.0)*
 
-  * Initial Release 
+  * Initial Release
