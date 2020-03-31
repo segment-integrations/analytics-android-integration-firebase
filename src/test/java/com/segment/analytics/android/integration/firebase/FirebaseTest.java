@@ -157,6 +157,18 @@ public class FirebaseTest {
         verify(firebase).setCurrentScreen(any(Activity.class), eq("home_screen"), (String) isNull());
     }
 
+    @Test
+    public void makeKeyWithDash() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("test-event-dashed").build());
+        verify(firebase).logEvent(eq("test_event_dashed"), bundleEq(new Bundle()));
+    }
+
+    @Test
+    public void makeKeyWithDot() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("test.event").build());
+        verify(firebase).logEvent(eq("test_event"), bundleEq(new Bundle()));
+    }
+
     /**
      * Uses the string representation of the object. Useful for JSON objects.
      * @param expected Expected object
