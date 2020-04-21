@@ -215,6 +215,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   public static String makeKey(String key) {
     if (key.contains(".")) {
       key = key.trim().replace(".", "_");
+    } else if (key.contains("-")) {
+      key = key.trim().replace("-", "_");
     } else {
       key = key.trim().replaceAll(" ", "_");
     }

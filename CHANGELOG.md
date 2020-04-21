@@ -1,3 +1,7 @@
+2.1.1 / 2020-04-21
+==================
+  * Adds check on `makeKey` to replace `-` to `_` on properties and event names.
+
 2.1.0 / 2020-02-20
 ==================
   * Add support for explicitly tracking screen calls.
