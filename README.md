@@ -11,8 +11,10 @@ Firebase Analytics integration for [analytics-android](https://github.com/segmen
 To install the Segment-Firebase integration, simply add this line to your gradle file:
 
 ```
-compile 'com.segment.analytics.android.integrations:firebase:+'
+implementation 'com.segment.analytics.android.integrations:firebase:+@aar'
 ```
+
+**Note:** The Firebase SDK requires Android resources. To avoid issues with app crashes please implement using the `aar` package. 
 
 ### Note
 To use firebase-integrations 1.4.+ :
