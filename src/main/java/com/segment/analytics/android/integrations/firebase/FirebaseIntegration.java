@@ -213,13 +213,13 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   }
 
   public static String makeKey(String key) {
-    if (key.contains(".")) {
-      key = key.trim().replace(".", "_");
-    } else if (key.contains("-")) {
-      key = key.trim().replace("-", "_");
-    } else {
-      key = key.trim().replaceAll(" ", "_");
+    String[] forbiddenChars = {".", "-", " "};
+    for (String forbidden : forbiddenChars) {
+      if (key.contains(forbidden)) {
+        key = key.trim().replace(forbidden, "_");
+      }
     }
+
     return key.substring(0, Math.min(key.length(), 40));
   }
 }
