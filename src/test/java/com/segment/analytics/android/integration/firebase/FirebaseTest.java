@@ -169,6 +169,18 @@ public class FirebaseTest {
         verify(firebase).logEvent(eq("test_event"), bundleEq(new Bundle()));
     }
 
+    @Test
+    public void makeKeyWithSpace() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("test event").build());
+        verify(firebase).logEvent(eq("test_event"), bundleEq(new Bundle()));
+    }
+
+    @Test
+    public void makeKeyWithDashAndDot() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("test-event-dashed-and.dotted").build());
+        verify(firebase).logEvent(eq("test_event_dashed_and_dotted"), bundleEq(new Bundle()));
+    }
+
     /**
      * Uses the string representation of the object. Useful for JSON objects.
      * @param expected Expected object
