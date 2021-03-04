@@ -80,7 +80,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     EVENT_MAPPER.put("Product Added to Wishlist", Event.ADD_TO_WISHLIST);
     EVENT_MAPPER.put("Product Shared", Event.SHARE);
     EVENT_MAPPER.put("Product Clicked", Event.SELECT_CONTENT);
-    EVENT_MAPPER.put("Product Searched", Event.SEARCH);
+    EVENT_MAPPER.put("Products Searched", Event.SEARCH);
     return EVENT_MAPPER;
   }
 
