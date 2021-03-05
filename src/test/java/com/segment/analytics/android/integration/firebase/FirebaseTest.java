@@ -148,6 +148,12 @@ public class FirebaseTest {
     }
 
     @Test
+    public void productsSearchedTransformation() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("Products Searched").build());
+        verify(firebase).logEvent(eq("search"), bundleEq(new Bundle()));
+    }
+
+    @Test
     public void trackScreenWithName() {
         final Activity activity = PowerMockito.mock(Activity.class);
         integration.onActivityStarted(activity);
