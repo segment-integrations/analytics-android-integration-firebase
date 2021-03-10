@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.segment.analytics.Properties;
+import com.segment.analytics.ValueMap;
 import com.segment.analytics.android.integrations.firebase.FirebaseIntegration;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
@@ -117,6 +118,24 @@ public class FirebaseTest {
         expected.putString("extra_spaces", "baz");
 
         verify(firebase).logEvent(eq("foo"), bundleEq(expected));
+    }
+
+    @Test
+    public void trackPurchaseWithProducts() {
+        Properties properties = new Properties()
+                .putValue("revenue", 100.0)
+                .putValue("currency", "USD");
+        Properties.Product product1 = new Properties.Product( "123",  "abc",  10.0);
+        properties.putProducts(product1);
+
+        integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("Order Completed").build());
+
+        Bundle expected = new Bundle();
+        expected.putDouble("value", 100.0);
+        expected.putString("currency", "USD");
+        expected.putString("items", "[{id=123, sku=abc, price=10.0}]");
+
+        verify(firebase).logEvent(eq("purchase"), bundleEq(expected));
     }
 
     @Test
