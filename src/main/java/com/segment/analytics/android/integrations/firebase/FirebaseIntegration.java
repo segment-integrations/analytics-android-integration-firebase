@@ -71,12 +71,12 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     Map<String, String> EVENT_MAPPER = new HashMap<>();
     EVENT_MAPPER.put("Product Added", Event.ADD_TO_CART);
     EVENT_MAPPER.put("Checkout Started", Event.BEGIN_CHECKOUT);
-    EVENT_MAPPER.put("Order Completed", Event.ECOMMERCE_PURCHASE);
-    EVENT_MAPPER.put("Order Refunded", Event.PURCHASE_REFUND);
+    EVENT_MAPPER.put("Order Completed", Event.PURCHASE);
+    EVENT_MAPPER.put("Order Refunded", Event.REFUND);
     EVENT_MAPPER.put("Product Viewed", Event.VIEW_ITEM);
     EVENT_MAPPER.put("Product List Viewed", Event.VIEW_ITEM_LIST);
     EVENT_MAPPER.put("Payment Info Entered", Event.ADD_PAYMENT_INFO);
-    EVENT_MAPPER.put("Promotion Viewed", Event.PRESENT_OFFER);
+    EVENT_MAPPER.put("Promotion Viewed", Event.VIEW_PROMOTION);
     EVENT_MAPPER.put("Product Added to Wishlist", Event.ADD_TO_WISHLIST);
     EVENT_MAPPER.put("Product Shared", Event.SHARE);
     EVENT_MAPPER.put("Product Clicked", Event.SELECT_CONTENT);
@@ -100,6 +100,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PROPERTY_MAPPER.put("revenue", Param.VALUE);
     PROPERTY_MAPPER.put("order_id", Param.TRANSACTION_ID);
     PROPERTY_MAPPER.put("currency", Param.CURRENCY);
+    PROPERTY_MAPPER.put("products", Param.ITEMS);
     return PROPERTY_MAPPER;
   }
 
