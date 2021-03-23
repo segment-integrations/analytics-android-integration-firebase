@@ -1,3 +1,9 @@
+2.2.0 / 2021-03-23
+==================
+  * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/32): Logic to catch forbidden chars in keys
+  * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/33): Apply correct transformation for Products Searched
+  * [New](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/34): Bump internal firebase SDK to 18.0.0
+
 2.1.1 / 2020-04-21
 ==================
   * Adds check on `makeKey` to replace `-` to `_` on properties and event names.
