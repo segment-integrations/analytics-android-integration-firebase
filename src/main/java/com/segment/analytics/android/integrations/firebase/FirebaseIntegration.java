@@ -258,7 +258,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   }
 
   public static String makeKey(String key) {
-    String[] forbiddenChars = {".", "-", " "};
+    String[] forbiddenChars = {".", "-", " ", ":"};
     for (String forbidden : forbiddenChars) {
       if (key.contains(forbidden)) {
         key = key.trim().replace(forbidden, "_");

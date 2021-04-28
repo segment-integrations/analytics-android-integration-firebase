@@ -220,6 +220,12 @@ public class FirebaseTest {
         verify(firebase).logEvent(eq("test_event_dashed_and_dotted"), bundleEq(new Bundle()));
     }
 
+    @Test
+    public void makeKeyWithColon() {
+        integration.track(new TrackPayload.Builder().anonymousId("12345").event("test:colon").build());
+        verify(firebase).logEvent(eq("test_colon"), bundleEq(new Bundle()));
+    }
+
     /**
      * Uses the string representation of the object. Useful for JSON objects.
      * @param expected Expected object
