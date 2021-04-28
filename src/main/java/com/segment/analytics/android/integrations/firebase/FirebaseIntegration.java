@@ -19,7 +19,9 @@ import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
 import com.segment.analytics.integrations.ScreenPayload;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.segment.analytics.internal.Utils.hasPermission;
@@ -102,6 +104,19 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PROPERTY_MAPPER.put("currency", Param.CURRENCY);
     PROPERTY_MAPPER.put("products", Param.ITEMS);
     return PROPERTY_MAPPER;
+  }
+
+  private static final Map<String, String> PRODUCT_MAPPER = createProductMap();
+
+  private static Map<String, String> createProductMap() {
+    Map<String, String> MAPPER = new HashMap<>();
+    MAPPER.put("category", Param.ITEM_CATEGORY);
+    MAPPER.put("product_id", Param.ITEM_ID);
+    MAPPER.put("id", Param.ITEM_ID);
+    MAPPER.put("name", Param.ITEM_NAME);
+    MAPPER.put("price", Param.PRICE);
+    MAPPER.put("quantity", Param.QUANTITY);
+    return MAPPER;
   }
 
   public FirebaseIntegration(Context context, Logger logger) {
@@ -196,21 +211,50 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       } else {
         property = makeKey(property);
       }
-      if (value instanceof Integer) {
-        int intValue = (int) value;
-        bundle.putInt(property, intValue);
-      } else if (value instanceof Double) {
-        double doubleValue = (double) value;
-        bundle.putDouble(property, doubleValue);
-      } else if (value instanceof Long) {
-        long longValue = (long) value;
-        bundle.putLong(property, longValue);
+      if (property.equals(Param.ITEMS)) {
+        List<ValueMap> products = properties.getList("products", ValueMap.class);
+        ArrayList<Bundle> mappedProducts = formatProducts(products);
+        bundle.putParcelableArrayList(property, mappedProducts);
       } else {
-        String stringValue = String.valueOf(value);
-        bundle.putString(property, stringValue);
+        putValue(bundle, property, value);
       }
     }
     return bundle;
+  }
+
+  private static ArrayList<Bundle> formatProducts(List<ValueMap> products) {
+    ArrayList<Bundle> mappedProducts = new ArrayList<>();
+    for (ValueMap product : products) {
+      Bundle mappedProduct = new Bundle();
+      for (Map.Entry<String, Object> innerEntry : product.entrySet()) {
+        String key = innerEntry.getKey();
+        Object value = innerEntry.getValue();
+        if (PRODUCT_MAPPER.containsKey(key)) {
+          key = PRODUCT_MAPPER.get(key);
+        } else {
+          key = makeKey(key);
+        }
+        putValue(mappedProduct, key, value);
+      }
+      mappedProducts.add(mappedProduct);
+    }
+    return mappedProducts;
+  }
+
+  private static void putValue(Bundle bundle, String key, Object value) {
+    if (value instanceof Integer) {
+      int intValue = (int) value;
+      bundle.putInt(key, intValue);
+    } else if (value instanceof Double) {
+      double doubleValue = (double) value;
+      bundle.putDouble(key, doubleValue);
+    } else if (value instanceof Long) {
+      long longValue = (long) value;
+      bundle.putLong(key, longValue);
+    } else {
+      String stringValue = String.valueOf(value);
+      bundle.putString(key, stringValue);
+    }
   }
 
   public static String makeKey(String key) {

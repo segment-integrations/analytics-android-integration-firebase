@@ -28,6 +28,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -125,14 +126,28 @@ public class FirebaseTest {
                 .putValue("revenue", 100.0)
                 .putValue("currency", "USD");
         Properties.Product product1 = new Properties.Product( "123",  "abc",  10.0);
+        product1.putName("foo");
+        product1.put("category", "bar");
+        product1.put("quantity", 2);
         properties.putProducts(product1);
 
         integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("Order Completed").build());
 
+        Bundle product = new Bundle();
+        product.putString("item_id", "123");
+        product.putString("item_name", "foo");
+        product.putString("item_category", "bar");
+        product.putDouble("price", 10.0);
+        product.putString("sku", "abc");
+        product.putInt("quantity", 2);
+
+        ArrayList<Bundle> items = new ArrayList<>();
+        items.add(product);
+
         Bundle expected = new Bundle();
         expected.putDouble("value", 100.0);
         expected.putString("currency", "USD");
-        expected.putString("items", "[{id=123, sku=abc, price=10.0}]");
+        expected.putParcelableArrayList("items", items);
 
         verify(firebase).logEvent(eq("purchase"), bundleEq(expected));
     }
