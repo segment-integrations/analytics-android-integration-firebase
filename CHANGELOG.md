@@ -1,3 +1,8 @@
+2.3.0 / 2021-05-03
+==================
+  * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/36): Fix product key mappings
+  * [New](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/37): `makeKey` Add restriction for `:`
+
 2.2.0 / 2021-03-23
 ==================
   * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/32): Logic to catch forbidden chars in keys
