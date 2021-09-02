@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static com.segment.analytics.internal.Utils.hasPermission;
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
+import static java.util.Objects.isNull;
 
 /**
  * Google Analytics for Firebase is a free app measurement solution that provides insight on app
@@ -211,7 +212,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       } else {
         property = makeKey(property);
       }
-      if (property.equals(Param.ITEMS)) {
+      if (property.equals(Param.ITEMS) && value != null) {
         List<ValueMap> products = properties.getList("products", ValueMap.class);
         ArrayList<Bundle> mappedProducts = formatProducts(products);
         bundle.putParcelableArrayList(property, mappedProducts);
