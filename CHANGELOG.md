@@ -1,3 +1,7 @@
+2.3.1 / 2021-09-09
+==================
+* [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/39): Catch error when products=null
+
 2.3.0 / 2021-05-03
 ==================
   * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/36): Fix product key mappings
