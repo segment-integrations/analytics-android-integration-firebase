@@ -153,6 +153,23 @@ public class FirebaseTest {
     }
 
     @Test
+    public void trackPurchaseWithNullProducts() {
+        Properties properties = new Properties()
+                .putValue("revenue", 100.0)
+                .putValue("currency", "USD")
+                .putValue("products", null);
+
+        integration.track(new TrackPayload.Builder().anonymousId("1234").properties(properties).event("Order Completed").build());
+
+        Bundle expected = new Bundle();
+        expected.putDouble("value", 100.0);
+        expected.putString("currency", "USD");
+        expected.putString("items", null);
+
+        verify(firebase).logEvent(eq("purchase"), bundleEq(expected));
+    }
+
+    @Test
     public void trackWithEventNameTransformation() {
         Properties properties = new Properties()
                 .putValue("integer", 1)

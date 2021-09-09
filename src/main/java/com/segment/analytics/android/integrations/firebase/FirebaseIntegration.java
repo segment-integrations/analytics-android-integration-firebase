@@ -211,7 +211,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
       } else {
         property = makeKey(property);
       }
-      if (property.equals(Param.ITEMS)) {
+      if (property.equals(Param.ITEMS) && value != null) {
         List<ValueMap> products = properties.getList("products", ValueMap.class);
         ArrayList<Bundle> mappedProducts = formatProducts(products);
         bundle.putParcelableArrayList(property, mappedProducts);
