@@ -224,6 +224,8 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
 
   private static ArrayList<Bundle> formatProducts(List<ValueMap> products) {
     ArrayList<Bundle> mappedProducts = new ArrayList<>();
+    if (products == null) return mappedProducts;
+
     for (ValueMap product : products) {
       Bundle mappedProduct = new Bundle();
       for (Map.Entry<String, Object> innerEntry : product.entrySet()) {
