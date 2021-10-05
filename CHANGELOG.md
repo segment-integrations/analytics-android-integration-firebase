@@ -1,3 +1,7 @@
+2.3.2 / 2021-10-05
+==================
+* [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/41): add null check on formatProducts
+
 2.3.1 / 2021-09-09
 ==================
 * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/39): Catch error when products=null
