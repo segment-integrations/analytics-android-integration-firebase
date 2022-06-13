@@ -1,3 +1,7 @@
+2.3.3 / 2022-06-13
+==================
+* [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/43): Upgrade Segment SDK version
+
 2.3.2 / 2021-10-05
 ==================
 * [Fix](https://github.com/segment-integrations/analytics-android-integration-firebase/pull/41): add null check on formatProducts
