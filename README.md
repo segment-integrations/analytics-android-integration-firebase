@@ -1,3 +1,12 @@
+# ⚠️ End-of-Support Announcement for Analytics-Android Integrations ⚠️
+
+Following the End-of-Support (EoS) for the core **Analytics-Android SDK** in **March 2026**, this legacy integration repository is also deprecated and will no longer receive updates. 
+
+Segment's future development efforts are concentrated on the new **Analytics-Kotlin** ecosystem. 
+
+* To migrate your core SDK, please see the [Analytics-Android to Analytics-Kotlin migration guide](https://segment.com/docs/connections/sources/catalog/libraries/mobile/kotlin-android/migration/).
+* To find the modern Kotlin equivalent for this specific integration, check the [Analytics-Kotlin Destination Plugins list](https://github.com/segment-integrations?q=analytics-kotlin).
+
 analytics-android-integration-firebase
 =======================================
 
