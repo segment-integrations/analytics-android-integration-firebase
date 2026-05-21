@@ -72,6 +72,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
   private static Map<String, String> createEventMap() {
     Map<String, String> EVENT_MAPPER = new HashMap<>();
     EVENT_MAPPER.put("Product Added", Event.ADD_TO_CART);
+    EVENT_MAPPER.put("Product Removed", Event.REMOVE_FROM_CART);
     EVENT_MAPPER.put("Checkout Started", Event.BEGIN_CHECKOUT);
     EVENT_MAPPER.put("Order Completed", Event.PURCHASE);
     EVENT_MAPPER.put("Order Refunded", Event.REFUND);
@@ -81,6 +82,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     EVENT_MAPPER.put("Promotion Viewed", Event.VIEW_PROMOTION);
     EVENT_MAPPER.put("Product Added to Wishlist", Event.ADD_TO_WISHLIST);
     EVENT_MAPPER.put("Product Shared", Event.SHARE);
+    EVENT_MAPPER.put("Cart Shared", Event.SHARE);
     EVENT_MAPPER.put("Product Clicked", Event.SELECT_CONTENT);
     EVENT_MAPPER.put("Products Searched", Event.SEARCH);
     return EVENT_MAPPER;
@@ -93,6 +95,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     PROPERTY_MAPPER.put("category", Param.ITEM_CATEGORY);
     PROPERTY_MAPPER.put("product_id", Param.ITEM_ID);
     PROPERTY_MAPPER.put("name", Param.ITEM_NAME);
+    PROPERTY_MAPPER.put("brand", Param.ITEM_BRAND);
     PROPERTY_MAPPER.put("price", Param.PRICE);
     PROPERTY_MAPPER.put("quantity", Param.QUANTITY);
     PROPERTY_MAPPER.put("query", Param.SEARCH_TERM);
@@ -114,6 +117,7 @@ public class FirebaseIntegration extends Integration<FirebaseAnalytics> {
     MAPPER.put("product_id", Param.ITEM_ID);
     MAPPER.put("id", Param.ITEM_ID);
     MAPPER.put("name", Param.ITEM_NAME);
+    MAPPER.put("brand", Param.ITEM_BRAND);
     MAPPER.put("price", Param.PRICE);
     MAPPER.put("quantity", Param.QUANTITY);
     return MAPPER;
