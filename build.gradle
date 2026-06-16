@@ -1,48 +1,40 @@
+apply plugin: 'com.android.library'
+
 buildscript {
   repositories {
     mavenCentral()
     google()
+    maven { url "https://jitpack.io"  }
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.2.1'
-    classpath 'com.f2prateek.javafmt:javafmt:0.1.6'
-    classpath 'io.codearte.gradle.nexus:gradle-nexus-staging-plugin:0.11.0'
+    classpath 'com.android.tools.build:gradle:4.1.0'
+    classpath 'com.google.gms:google-services:4.3.15'
   }
 }
 
 // Use -Prelease or $ORG_GRADLE_PROJECT_RELEASE="true" to mark the project as a release
-ext.isRelease = hasProperty('release')
+ext.isRelease = true
 
-apply plugin: 'com.android.library'
-apply plugin: 'com.f2prateek.javafmt'
+group = 'com.segment.analytics.android.integrations'
+version = '2.3.4'
 
 android {
-  compileSdkVersion 28
-  buildToolsVersion '28.0.3'
+  compileSdkVersion 32
 
   defaultConfig {
-    minSdkVersion 14
-    targetSdkVersion 28
+    minSdkVersion 26
+    targetSdkVersion 32
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_7
-    targetCompatibility JavaVersion.VERSION_1_7
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 
 
   lintOptions {
     abortOnError false
-  }
-
-  testOptions {
-    unitTests {
-      all {
-        jvmArgs '-noverify'
-      }
-      includeAndroidResources = true
-    }
   }
 }
 
@@ -51,10 +43,11 @@ dependencies {
     mavenCentral()
     jcenter()
     google()
+    maven { url "https://jitpack.io"  }
   }
 
-  api 'com.segment.analytics.android:analytics:4.10.4'
-  implementation 'com.google.firebase:firebase-analytics:18.0.0'
+  api 'com.segment.analytics.android:analytics:4.11.3'
+  implementation 'com.google.firebase:firebase-analytics:21.0.0'
 
   testImplementation 'com.segment.analytics.android:analytics-tests:4.3.1'
   testImplementation 'junit:junit:4.12'
@@ -74,5 +67,4 @@ dependencies {
 
 apply from: rootProject.file('gradle/attach-jar.gradle')
 apply from: rootProject.file('gradle/upload.gradle')
-apply from: rootProject.file('gradle/sign.gradle')
-apply from: rootProject.file('gradle/promote.gradle')
+//apply from: rootProject.file('gradle/promote.gradle')
